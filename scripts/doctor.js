@@ -11,9 +11,6 @@ const path = require('path');
 const EXTERNAL_TOOLS = [
   {
     name: 'rtk',
-    // rtk 的版本旗标在不同构建间存在两种风格（--version / version），
-    // 无法确定哪种可用时都探测、分别记录（各占一行，共 7 行状态）。
-    probeAll: true,
     probes: ['rtk --version', 'rtk version'],
     install:
       'macOS: brew install rtk | Linux: curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh | Windows: 下载 https://github.com/rtk-ai/rtk/releases 的 rtk-x86_64-pc-windows-msvc.zip | 兜底: cargo install --git https://github.com/rtk-ai/rtk',
@@ -58,13 +55,6 @@ function detectSuperpowers(homedir = os.homedir()) {
 function checkAll({ runner = probe, superpowersRunner = detectSuperpowers } = {}) {
   const results = [];
   for (const tool of EXTERNAL_TOOLS) {
-    if (tool.probeAll) {
-      // 每个探测风格独立记录一行（rtk 专用：两种旗标风格都报告）
-      for (const p of tool.probes) {
-        results.push({ name: tool.name, ...runner(p), install: tool.install });
-      }
-      continue;
-    }
     let r = { ok: false, detail: 'not found' };
     for (const p of tool.probes) {
       r = runner(p);

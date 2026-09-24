@@ -20,15 +20,15 @@ test('detectSuperpowers reads real installed_plugins.json without throwing', () 
   assert.equal(typeof r.detail, 'string');
 });
 
-test('checkAll returns 7 components', () => {
+test('checkAll returns 6 components', () => {
   const results = checkAll({
     runner: () => ({ ok: true, detail: 'v1' }),
     superpowersRunner: () => ({ ok: true, detail: 'plugin installed' }),
   });
-  assert.equal(results.length, 7);
+  assert.equal(results.length, 6);
   assert.deepEqual(
     results.map((r) => r.name).sort(),
-    ['caveman', 'codegraph', 'openspec', 'ponytail', 'rtk', 'rtk', 'superpowers']
+    ['caveman', 'codegraph', 'openspec', 'ponytail', 'rtk', 'superpowers']
   );
 });
 
