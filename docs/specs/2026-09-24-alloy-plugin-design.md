@@ -108,7 +108,7 @@ alloy/
 
 - **setup**：每步失败给手动命令兜底，不静默；安装后回读版本号验证
 - **运行时**：orchestrator 内嵌降级表（本文件第 4 节），按表降级并在交付时注明
-- **doctor**：退出码 `0`=ok / `1`=degraded / `2`=missing，供 status 与脚本化测试使用
+- **doctor**：退出码 `0`=ok / `1`=degraded（有组件缺失），供 status 与脚本化测试使用
 
 ## 8. 测试策略
 
@@ -127,5 +127,5 @@ alloy/
 ## 10. 里程碑
 
 - **v0.1（本次实施）**：plugin.json + marketplace.json + 三命令 + 三 skill + doctor.js + README/NOTICE，本地 marketplace 安装验证
-- **v0.2**：SessionStart hook 自动体检提示；`rtk gain` 统计进 status
+- **v0.2**：SessionStart hook 自动体检提示；`rtk gain` 统计增强（历史趋势）
 - **v1.0**：发布自有 marketplace（marketplace.json），支持一行安装分发给他人
