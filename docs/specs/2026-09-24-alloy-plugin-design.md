@@ -75,7 +75,7 @@ alloy/
    - rtk（[rtk-ai/rtk](https://github.com/rtk-ai/rtk)，默认分支 develop，官方发布页 https://github.com/rtk-ai/rtk/releases）：
      - macOS：`brew install rtk` 或官方 install.sh（`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh`）
      - Linux：官方 install.sh
-     - Windows：从 releases 下载 `rtk-x86_64-pc-windows-msvc.zip` 解压至 PATH
+     - Windows：从 releases 下载 `rtk-x86_64-pc-windows-msvc.zip` 解压至 PATH；直链被网络拦截时自动借道注册表系统代理（`HKCU\...Internet Settings\ProxyServer`）重试，仍失败才转手动
      - 兜底：`cargo install --git https://github.com/rtk-ai/rtk`
    - superpowers：无法以命令安装，提示用户在插件市场安装
 3. 每步失败给出对应的手动安装命令兜底
