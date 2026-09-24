@@ -1,0 +1,13 @@
+{
+  "name": "alloy-marketplace",
+  "owner": {
+    "name": "Alloy"
+  },
+  "plugins": [
+    {
+      "name": "alloy",
+      "source": "./",
+      "description": "六合一编码插件：OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail"
+    }
+  ]
+}
