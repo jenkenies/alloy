@@ -73,7 +73,7 @@ alloy/
    - openspec：`npm i -g @fission-ai/openspec`
    - codegraph：`npm i -g @colbymchenry/codegraph`
    - rtk（[rtk-ai/rtk](https://github.com/rtk-ai/rtk)，默认分支 develop，官方发布页 https://github.com/rtk-ai/rtk/releases）：
-     - macOS：`brew install rtk` 或官方 install.sh（`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh`）
+     - macOS：`brew install rtk` 或官方 install.sh（`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh`）
      - Linux：官方 install.sh
      - Windows：从 releases 下载 `rtk-x86_64-pc-windows-msvc.zip` 解压至 PATH
      - 兜底：`cargo install --git https://github.com/rtk-ai/rtk`

@@ -13,7 +13,7 @@ const EXTERNAL_TOOLS = [
     name: 'rtk',
     probes: ['rtk --version', 'rtk version'],
     install:
-      'macOS: brew install rtk | Linux: curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh | Windows: 下载 https://github.com/rtk-ai/rtk/releases 的 rtk-x86_64-pc-windows-msvc.zip | 兜底: cargo install --git https://github.com/rtk-ai/rtk',
+      'macOS: brew install rtk | Linux: curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh | Windows: 下载 https://github.com/rtk-ai/rtk/releases 的 rtk-x86_64-pc-windows-msvc.zip | 兜底: cargo install --git https://github.com/rtk-ai/rtk',
   },
   {
     name: 'openspec',

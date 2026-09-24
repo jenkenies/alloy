@@ -21,14 +21,14 @@ allowed-tools: Bash
    **codegraph**（全平台）：
    - 装：`npm i -g @colbymchenry/codegraph`
    - 验：`codegraph version`
-   - 然后运行 `codegraph install`（官方安装器把 MCP server `codegraph serve --mcp` 写入 Claude Code 用户级配置并设置自动放行；交互选项选 Claude Code / 所有项目）
-   - 兜底：`npx @colbymchenry/codegraph`（官方交互安装器）
+   - 然后运行 `codegraph install`（官方安装器把 MCP server `codegraph serve --mcp` 写入 Claude Code 用户级配置并设置自动放行）。它可能是交互式命令：若当前环境无法应答 TTY 提示，改为提示用户在终端自行运行 `codegraph install`，不要挂起等待
+   - 兜底（打印给用户手动执行）：`npx @colbymchenry/codegraph`（官方交互安装器）
 
    **rtk**（https://github.com/rtk-ai/rtk）：
-   - macOS：`brew install rtk`；或 `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh`
-   - Linux：`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh`（装入 `~/.local/bin`，提示用户确认 PATH）
-   - Windows：从 https://github.com/rtk-ai/rtk/releases 下载 `rtk-x86_64-pc-windows-msvc.zip`，解压 `rtk.exe` 到 PATH 内目录（如 `%USERPROFILE%\bin`）
-   - 兜底：`cargo install --git https://github.com/rtk-ai/rtk`
+   - macOS：`brew install rtk`；或 `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh`
+   - Linux：`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh`（装入 `~/.local/bin`，提示用户确认 PATH）
+   - Windows：从 https://github.com/rtk-ai/rtk/releases 下载 `rtk-x86_64-pc-windows-msvc.zip`，解压 `rtk.exe` 到 PATH 内目录（如 `%USERPROFILE%\bin`；该目录不在 PATH 时先加入再验证）
+   - 兜底（打印给用户手动执行）：`cargo install --git https://github.com/rtk-ai/rtk`
    - 验：`rtk --version`
 
    **superpowers**（无法命令安装）：
