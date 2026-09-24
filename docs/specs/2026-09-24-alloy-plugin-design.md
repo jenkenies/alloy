@@ -57,8 +57,8 @@ alloy/
 | 上游 | 接入方式 | 检测方法 | 缺失时降级行为 |
 |---|---|---|---|
 | OpenSpec | CLI（npm `@fission-ai/openspec`） | `openspec --version` | spec 阶段降级为 `docs/specs/` 手写 markdown 规格 |
-| Superpowers | Claude Code 插件 | 已安装插件列表 | 编排 skill 独立跑轻量流程（跳过 TDD 纪律引用） |
-| CodeGraph | CLI + MCP（setup 时由官方 `codegraph install` 写入用户级 MCP 配置，server 启动命令 `codegraph serve --mcp`） | MCP 工具列表含 `codegraph_explore` | 降级为原生 Grep/Glob 探索，汇报注明"上下文未建图" |
+| Superpowers | Claude Code 插件 | 已安装插件列表 | 编排 skill 内置轻量 TDD 纪律（测试先行→最小实现→验证），行为为设计要求的超集 |
+| CodeGraph | CLI + MCP（setup 时由官方 `codegraph install` 写入用户级 MCP 配置，server 启动命令 `codegraph serve --mcp`） | doctor 用 CLI 探针 `codegraph version`/`--version`；orchestrator 优先 MCP 工具 `codegraph_explore`，CLI ok 亦可（脚本无法内省 MCP 工具列表，为文档化的实现偏差） | 降级为原生 Grep/Glob 探索，汇报注明"上下文未建图" |
 | RTK | CLI 二进制（setup 安装） | `rtk --version` | 降级为原生命令 |
 | Caveman | skill 文本内嵌 | 无需检测 | 永远可用 |
 | Ponytail | skill 文本内嵌 | 无需检测 | 永远可用 |
