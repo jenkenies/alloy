@@ -66,3 +66,9 @@ test('render marks MISSING rows and prints install hints', () => {
   assert.match(out, /brew install rtk/);
   assert.match(out, /ok\s+caveman/);
 });
+
+test('probe strips trailing CR from CRLF output', () => {
+  const r = probe('node -e "process.stdout.write(\'v1.2.3\\r\\n\')"');
+  assert.equal(r.ok, true);
+  assert.equal(r.detail, 'v1.2.3');
+});
