@@ -27,11 +27,12 @@ allowed-tools: Bash
    **rtk**（https://github.com/rtk-ai/rtk）：
    - macOS：`brew install rtk`；或 `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh`
    - Linux：`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/HEAD/install.sh | sh`（装入 `~/.local/bin`，提示用户确认 PATH）
-   - Windows：自动下载链（源始终为官方 releases，逐级兜底）：
-     ① 直链 `https://github.com/rtk-ai/rtk/releases/latest/download/rtk-x86_64-pc-windows-msvc.zip`（`curl -sL` 下载，校验文件大小与 release API 中 `size` 一致）
-     ② 直链超时/连接被重置时，读注册表系统代理 `reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer`，取到 `host:port` 后带 `-x http://host:port` 重试直链（企业网常见：本地代理客户端只服务浏览器，curl/git 默认不走）
-     ③ 仍失败才打印手动步骤：浏览器打开 https://github.com/rtk-ai/rtk/releases 下载同名 zip
-     解压 `rtk.exe` 到 PATH 内目录（如 `%USERPROFILE%\bin`；目录不存在先创建，确认在 PATH 后再验证）。下载用完即删临时 zip
+   - Windows：自动安装链（源始终为官方渠道，逐级兜底）：
+     ① `winget install rtk-ai.rtk`（官方 winget 包，Windows 内置；装完若 `rtk --version` 找不到命令，提示用户新开终端再验）
+     ② winget 不可用/失败 → 直链 `https://github.com/rtk-ai/rtk/releases/latest/download/rtk-x86_64-pc-windows-msvc.zip`（`curl -sL` 下载，校验文件大小与 release API 中 `size` 一致）
+     ③ 直链超时/连接被重置时，读注册表系统代理 `reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer`，取到 `host:port` 后带 `-x http://host:port` 重试直链（企业网常见：本地代理客户端只服务浏览器，curl/git 默认不走）
+     ④ 仍失败才打印手动步骤：浏览器打开 https://github.com/rtk-ai/rtk/releases 下载同名 zip
+     直链路径安装时：解压 `rtk.exe` 到 PATH 内目录（如 `%USERPROFILE%\bin`；目录不存在先创建，确认在 PATH 后再验证），下载用完即删临时 zip
    - 兜底（打印给用户手动执行）：`cargo install --git https://github.com/rtk-ai/rtk`
    - 验：`rtk --version`
 
