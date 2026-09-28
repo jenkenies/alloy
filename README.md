@@ -10,6 +10,8 @@
 | 输出压缩 | [RTK](https://github.com/rtk-ai/rtk) | 命令输出进上下文前先瘦身 |
 | 输出极简 | [Caveman](https://github.com/JuliusBrussee/caveman) | 回答省 token |
 | 代码极简 | [Ponytail](https://github.com/DietrichGebert/ponytail) | 最小 diff，~54% 减代码量 |
+| 需求澄清 | Alloy v0.2 内置 | brainstorm：一次一问 + 唯一推荐方案（strict 模式） |
+| subagent 驱动 | Alloy v0.2 内置 | strict 多任务双阶段审查实现 |
 
 ## 安装
 
@@ -27,7 +29,8 @@
 
 - `/alloy:status` — 组件体检 + token 节省统计
 - `/alloy:setup` — 一键安装缺失 CLI
-- `/alloy:flow <任务>` — explore → spec → 实现 → 交付 四阶段工作流
+- `/alloy:fast <任务>` — 极简模式：explore → spec → 实现 → 交付，主会话直接执行
+- `/alloy:strict <任务>` — 严谨模式：explore → brainstorm → spec → 实现 → 交付，含需求澄清、ceiling 质量门禁、subagent 驱动实现（任务 ≥3 时）
 
 组件缺失时自动降级，不中断工作流。
 
