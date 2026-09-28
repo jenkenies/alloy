@@ -7,7 +7,7 @@
     {
       "name": "alloy",
       "source": "./",
-      "description": "六合一编码插件：OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail"
+      "description": "六家精华 + 内置需求澄清与 subagent 驱动：OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail"
     }
   ]
 }

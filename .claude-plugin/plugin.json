@@ -1,7 +1,7 @@
 {
   "name": "alloy",
-  "version": "0.1.0",
-  "description": "六合一编码插件：装一个 = OpenSpec（spec 流程）+ Superpowers（TDD 纪律）+ CodeGraph（代码图谱）+ RTK（输出压缩）+ Caveman（输出极简）+ Ponytail（代码极简）。/alloy:setup 一键安装外部 CLI，组件缺失自动降级不中断。",
+  "version": "0.2.0",
+  "description": "六家精华合一的编码插件：OpenSpec（spec 流程）+ Superpowers（TDD 纪律）+ CodeGraph（代码图谱）+ RTK（输出压缩）+ Caveman（输出极简）+ Ponytail（代码极简），另内置需求澄清（brainstorm）与 subagent 驱动实现。/alloy:fast 极简模式、/alloy:strict 严谨模式双工作流；/alloy:setup 一键安装外部 CLI，组件缺失自动降级不中断。",
   "author": {
     "name": "Alloy"
   },
