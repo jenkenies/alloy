@@ -32,7 +32,7 @@ function probe(cmd) {
     const out = execSync(cmd, {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 10000,
+      timeout: 4000,
       maxBuffer: 4 * 1024 * 1024,
     });
     return { ok: true, detail: String(out).trim().split(/\r?\n/)[0].slice(0, 80) };

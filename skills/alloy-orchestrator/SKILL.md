@@ -30,7 +30,7 @@ description: >
 
 按序尝试，命中即停：
 
-1. CodeGraph MCP 可用（工具列表含 `codegraph_explore`）→ 用它查询任务涉及的文件与符号。只取符号级结果，不整读大文件。若返回"项目未索引"类提示 → 建议用户跑 `codegraph init`，本次先走第 3 条。
+1. CodeGraph MCP 可用（工具列表含 `codegraph_explore`）→ 用它查询任务涉及的文件与符号。只取符号级结果，不整读大文件。若返回"项目未索引"类提示 → 建议用户跑 `codegraph init`，本次先走第 3 条。**调用超时或报错（MCP server 已注册但未运行的常见表现）→ 最多重试 1 次，仍失败立即回退第 2/3 条，交付时注明，不在这一步耗时间。**
 2. CodeGraph CLI 可用（doctor 报 ok）→ `codegraph explore "<任务关键词>"`。
 3. 均不可用 → Grep/Glob 自行探索；交付时注明"上下文未建图"。
 
@@ -55,6 +55,7 @@ description: >
 - openspec 可用（doctor 报 ok）→ 用 openspec 创建变更提案（proposal/spec/tasks），向用户展示摘要并等确认。
 - 不可用 → 在 `docs/specs/` 手写 markdown 规格（≤30 行：动机 / 改动点 / 验收标准），等用户确认。
 - **规格未经用户确认，不得进入实现阶段。** 用户明确说跳过规格时才可跳过。
+- 等待用户确认是**故意的暂停点（门禁）**，不是卡死：向用户说明"规格已产出，等你确认后进入实现"，用户已确认或跳过时不再等待。
 - fast 模式发现需求缺口时，直接列出问用户（不走 brainstorm、不跑 ceiling）。
 
 ### ceiling 五维检查（仅 strict，spec 产出后、请求确认前跑）
@@ -86,7 +87,7 @@ description: >
 
 ### 派发判定（仅 strict）
 
-- spec 拆解后任务 **≥3 个** → 按 `alloy-subagents` skill 派发 subagent 驱动实现（每任务新 implementer + 双阶段审查）。
+- spec 拆解后任务 **≥3 个** → 按 `alloy-subagents` skill 派发 subagent 驱动实现（每任务新 implementer + 双阶段审查；其性能规则：修复轮热续原实例、独立审查可并行、小任务合并审查——照做，这是防慢防卡的关键）。
 - 任务 **1-2 个** → 主会话直接实现（brief 准备成本 > 收益）。
 - **fast 模式永不派发 subagent。**
 - Task 工具不可用 → strict 退回主会话顺序实现；brief 字段表（见 alloy-subagents）仍用于任务组织，不浪费。
