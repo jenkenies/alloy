@@ -2,7 +2,7 @@
 name: alloy-subagents
 description: >
   Alloy subagent 驱动实现协议（strict 模式，任务 ≥3 时使用）。主会话作为 controller，
-  每任务派发 implementer subagent（零上下文，brief 从 03-plan.md 对应任务行派生，字段一一对应），
+  每任务派发 implementer subagent（零上下文，brief 从 03-plan.md 对应任务行派生主要字段并补齐数据来源/约束），
   每任务双阶段审查（spec 合规 → 代码质量），四态状态上报。性能设计：
   修复轮热续原实例（不重派）、独立任务审查并行、小任务合并审查、审查 prompt 控体积、
   派发超时止损、implementer 提问 controller 自答优先（防慢防卡）。
@@ -23,7 +23,7 @@ description: >
 
 ```
 每任务：
-  1. 派 implementer（prompts/implementer-prompt.md，brief 从 03-plan.md 对应任务行派生，字段一一对应填全；验收标准与 spec 条目原文摘自 02-spec.md）
+  1. 派 implementer（prompts/implementer-prompt.md，brief 从 03-plan.md 对应任务行派生主要字段并补齐数据来源/约束；验收标准与 spec 条目原文摘自 02-spec.md）
   2. implementer 可先提问 → controller 解答后继续
   3. implementer 实现 + TDD（测试先行）+ 自审
   4. 派 spec 合规审查（prompts/spec-reviewer-prompt.md）
@@ -56,7 +56,7 @@ description: >
 
 ## brief 字段表（implementer-prompt.md 核心，controller 必须填全）
 
-**来源约定：brief 从 03-plan.md 对应任务行派生（字段一一对应），不自行从 spec 重新摘录组装；验收标准与 spec 相关条目原文摘自 02-spec.md。**
+**来源约定：brief 主要字段（目标/验收/锚点/验证命令/依赖）从 03-plan.md 对应任务行派生，不自行从 spec 重新摘录组装；数据来源与约束两项 plan 未包含，由 controller 结合 02 与代码现状补齐；验收标准与 spec 相关条目原文摘自 02。**
 
 | 字段 | 防的坑 |
 |---|---|

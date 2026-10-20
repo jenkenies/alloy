@@ -44,7 +44,7 @@ strict 全程产物落盘（见落盘协议），fast 不落盘。
 
 ## 落盘协议（strict）
 
-产物统一落盘到 **`docs/superpowers/`**（对齐 superpowers 目录规范：specs/plans 按类型分目录；文件名 `<YYYY-MM-DD>-<任务slug>-<类型>.md`，slug 从任务描述提取 3-6 个词，连字符连接）。产物简称与实际路径映射（正文其他处引用的产物文件名即指对应产物）：
+产物统一落盘到 **`docs/superpowers/`**（对齐 superpowers 目录规范：specs/plans 按类型分目录；文件名 `<YYYY-MM-DD>-<任务slug>-<类型>.md`。slug 一律英文小写：中文任务取关键词的英文翻译，无对应英文可用拼音，3-6 个词连字符连接，保证跨平台文件名安全）。产物简称与实际路径映射（正文其他处引用的产物文件名即指对应产物）：
 
 | 简称 | 实际路径 |
 |---|---|
@@ -110,7 +110,8 @@ strict 共 3 个用户门禁：门禁 1（brainstorm 末，模糊点清单）、
 
 ## 阶段 3：spec（规格，strict）
 
-- openspec 可用（doctor 报 ok）→ 用 openspec 创建变更提案（proposal/spec/tasks），**摘要同步落盘 02-spec.md**。
+- openspec 可用（doctor 报 ok）**且项目已初始化**（存在 `openspec/` 目录）→ 用 openspec 创建变更提案（proposal/spec/tasks），**摘要同步落盘 02-spec.md**。
+- openspec 可用但项目未初始化 → 询问用户是否运行 `openspec init`（一次，说明利弊）；用户不愿或 init 失败 → 本次走手写 02 并交付注明，禁止反复尝试。
 - 不可用 → 手写 02-spec.md（≤40 行：动机 / 方案 / 改动点 / 验收标准）。
 - **验收标准必须逐条可验证**（能导出测试场景或命令）。
 - **规格未经门禁 2 确认，不得进入实现。**
@@ -148,6 +149,7 @@ strict 共 3 个用户门禁：门禁 1（brainstorm 末，模糊点清单）、
 
 - superpowers 可用 → 走其 test-driven-development 技能：测试先行，RED→GREEN→REFACTOR。
 - 不可用 → 仍执行同等纪律：先写失败测试 → 最小实现 → 运行验证。测试框架跟项目现状，不新引入。
+- **实现前预检（主会话与 subagent 路径都强制）**：验证命令先确认可运行（实际跑一次，或核对 package.json/scripts 等定义存在）；不可运行 → 先修复验证环境或作为缺口升级用户，禁止带着跑不通的验证命令写码。
 
 ### 派发判定（strict）
 
