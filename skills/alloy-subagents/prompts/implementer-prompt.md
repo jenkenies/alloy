@@ -1,6 +1,6 @@
 # Implementer 派发模板
 
-controller 按本模板派发实现 subagent。`{{...}}` 为必填占位符，禁止留空；brief 不继承任何会话上下文，subagent 只看得到本 brief 全文。
+controller 按本模板派发实现 subagent。brief 由 controller 从 03-plan.md 对应任务行派生（字段一一对应，不重新组装）；验收标准与 spec 条目原文摘自 02-spec.md。`{{...}}` 为必填占位符，禁止留空；brief 不继承任何会话上下文，subagent 只看得到本 brief 全文。
 
 ---
 
@@ -11,7 +11,7 @@ controller 按本模板派发实现 subagent。`{{...}}` 为必填占位符，�
 **场景与验收标准：**
 {{逐条验收标准，每条可验证}}
 
-**spec 相关条目原文**（controller 从 spec 摘录本任务相关条目，逐条带全原文；subagent 禁止自行读 spec 文件）：
+**验收标准与 spec 条目原文**（验收标准摘自 02-spec.md 原文，本任务相关 spec 条目由 controller 随 brief 带全，逐条带全原文；subagent 禁止自行读 spec 文件）：
 - {{条目原文}}
 
 **代码锚点**（禁止裸行号，锚点片段须与当前代码一致）：

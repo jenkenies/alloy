@@ -8,7 +8,7 @@ controller 按本模板派发 spec 合规审查 subagent。审查者只判断"�
 
 **任务目标**：{{一句话}}
 
-**验收标准**（从 implementer brief 原文复制）：
+**验收标准**（02-spec.md 原文，controller 复制）：
 {{逐条}}
 
 **改动内容**（controller 粘贴 diff 或变更方法代码，审查以此为准；diff 超过约 200 行时 controller 会改传文件清单 + 关键符号锚点 + 变更摘要，据此定位即可）：

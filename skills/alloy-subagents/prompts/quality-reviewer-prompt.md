@@ -8,7 +8,7 @@ controller 按本模板派发代码质量审查 subagent。前置条件：spec �
 
 **改动清单**：{{文件路径 + 变更摘要（controller 从 implementer 返回中复制）}}
 
-**验收标准**（controller 从 implementer brief 复制，供核对测试覆盖）：
+**验收标准与验证命令**（验收标准摘自 02-spec.md 原文，验证命令取自 03-plan.md 对应任务行，供核对测试覆盖）：
 {{逐条}}
 
 **相关上下文**（controller 粘贴，不让审查者自行探索大范围代码；超过约 200 行时给文件清单 + 关键符号锚点 + 变更摘要）：
