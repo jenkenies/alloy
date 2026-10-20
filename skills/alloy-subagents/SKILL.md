@@ -2,9 +2,10 @@
 name: alloy-subagents
 description: >
   Alloy subagent 驱动实现协议（strict 模式，任务 ≥3 时使用）。主会话作为 controller，
-  每任务派发 implementer subagent（零上下文，brief 由 controller 精确构造），
+  每任务派发 implementer subagent（零上下文，brief 从 03-plan.md 对应任务行派生，字段一一对应），
   每任务双阶段审查（spec 合规 → 代码质量），四态状态上报。性能设计：
-  修复轮热续原实例（不重派）、独立任务审查并行、小任务合并审查、审查 prompt 控体积。
+  修复轮热续原实例（不重派）、独立任务审查并行、小任务合并审查、审查 prompt 控体积、
+  派发超时止损、implementer 提问 controller 自答优先（防慢防卡）。
   配套 prompts/ 下三个模板。
 ---
 
@@ -22,7 +23,7 @@ description: >
 
 ```
 每任务：
-  1. 派 implementer（prompts/implementer-prompt.md，brief 全字段填全）
+  1. 派 implementer（prompts/implementer-prompt.md，brief 从 03-plan.md 对应任务行派生，字段一一对应填全；验收标准与 spec 条目原文摘自 02-spec.md）
   2. implementer 可先提问 → controller 解答后继续
   3. implementer 实现 + TDD（测试先行）+ 自审
   4. 派 spec 合规审查（prompts/spec-reviewer-prompt.md）
@@ -45,8 +46,17 @@ description: >
 4. **审查 prompt 控体积**：diff 超过约 200 行 → 不整贴 diff，改传文件清单 + 关键符号锚点 + 变更摘要（reviewer 据此定位，体积小一半以上）。
 5. **无界循环即升级**：同一任务连续 NEEDS_CONTEXT / BLOCKED 累计 **2 次** → 停止重派，升级给用户（列出缺口，请求补充后继续）。
 6. **久无返回先查模型层**：subagent 超过正常耗时数倍仍无结果 → 先查模型层（模型不可用 / 队列堆积），换标准模型重派；不是任务层问题就别在任务层死等。
+7. **超时止损**：subagent 超过预期耗时数倍（建议 5 分钟量级）无返回 → TaskStop 终止该实例 → 评估：任务可拆小 → 拆小重派；不可拆 → 该任务退回主会话直接实现并注明。禁止无限等待。
+8. **提问自答优先**：implementer 返回 NEEDS_CONTEXT 时，controller 先查 03-plan.md / 已落盘产物（01/02）/ 代码库能否自答；能答 → 补齐后热续原实例；不能 → 汇总缺口**一次性**升级用户，禁止逐条挤牙膏式多轮补问。
+
+## 状态落盘联动
+
+- 每任务完成（双审通过标记完成）→ controller 立即更新任务目录 STATUS.md：已完成任务列表 + 当前任务 + 续跑点（防断线丢进度，规则见 alloy-orchestrator 落盘协议）。
+- 门禁行为（等待/确认/续跑）统一遵循 alloy-orchestrator 的门禁统一协议，本 skill 不重复定义。
 
 ## brief 字段表（implementer-prompt.md 核心，controller 必须填全）
+
+**来源约定：brief 从 03-plan.md 对应任务行派生（字段一一对应），不自行从 spec 重新摘录组装；验收标准与 spec 相关条目原文摘自 02-spec.md。**
 
 | 字段 | 防的坑 |
 |---|---|
@@ -84,3 +94,4 @@ description: >
 - 禁止用 implementer 自审替代独立审查
 - 禁止对 NEEDS_CONTEXT / BLOCKED 无界重派（累计 2 次即升级用户，见性能规则 5）
 - 子代理执行期间 controller 不停顿等待用户确认（除非收到 BLOCKED 且升级链走完）；唯一停止理由：BLOCKED 无法自解、影响正确性的歧义、全部任务完成
+- 禁止变更已冻结的 02-spec.md / 03-plan.md（门禁 2 确认后即冻结；发现结构性问题按 BLOCKED 升级链处理，不得擅自改方案）
