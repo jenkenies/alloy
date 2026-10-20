@@ -1,6 +1,7 @@
 ---
 description: Alloy 严谨模式：explore→brainstorm→spec→plan→implement→verify→交付 七阶段全流程，3 个用户门禁，产物落盘 docs/alloy/ 支持跨会话续跑
 argument-hint: <任务描述>（留空则尝试续跑进行中的 alloy 任务）
+allowed-tools: Bash
 ---
 
 # /alloy:strict

@@ -72,3 +72,41 @@ test('probe strips trailing CR from CRLF output', () => {
   assert.equal(r.ok, true);
   assert.equal(r.detail, 'v1.2.3');
 });
+
+test('detectSuperpowers matches array structure of installed_plugins.json', () => {
+  const os = require('os');
+  const fs = require('fs');
+  const path = require('path');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-super-'));
+  const dir = path.join(tmp, '.claude', 'plugins');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, 'installed_plugins.json'),
+    JSON.stringify({ plugins: [{ name: 'superpowers', version: '3.0.0' }] })
+  );
+  const r = detectSuperpowers(tmp);
+  assert.equal(r.ok, true);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('detectSuperpowers returns false when superpowers absent (object structure)', () => {
+  const os = require('os');
+  const fs = require('fs');
+  const path = require('path');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-nosuper-'));
+  const dir = path.join(tmp, '.claude', 'plugins');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, 'installed_plugins.json'),
+    JSON.stringify({ plugins: { 'other-plugin@1.0.0': { name: 'other-plugin' } } })
+  );
+  const r = detectSuperpowers(tmp);
+  assert.equal(r.ok, false);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('probe reports failure detail for existing command with non-zero exit', () => {
+  const r = probe('node -e "process.exit(3)"');
+  assert.equal(r.ok, false);
+  assert.match(r.detail, /failed/);
+});

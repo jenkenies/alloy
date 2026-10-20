@@ -1,6 +1,7 @@
 ---
 description: Alloy 极简模式：explore → spec → 实现 → 交付，主会话直接执行；交付后可运行 /alloy:status 查看组件统计
 argument-hint: <任务描述>
+allowed-tools: Bash
 ---
 
 # /alloy:fast

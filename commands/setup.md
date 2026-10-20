@@ -37,7 +37,7 @@ allowed-tools: Bash
    - 验：`rtk --version`
 
    **superpowers**（无法命令安装）：
-   - 提示用户在 Claude Code 插件市场安装 superpowers（官方 marketplace：claude-plugins-official）
+   - 提示用户在 Claude Code 插件市场安装 superpowers（`/plugin marketplace add obra/superpowers`，作者官方市场；若已通过 claude-plugins-official 装过则跳过）
 
 3. 重跑 `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.js"`，输出最终状态表（ok / MISSING）。
 

@@ -7,7 +7,7 @@
     {
       "name": "alloy",
       "source": "./",
-      "description": "六家精华 + 内置需求澄清与 subagent 驱动：OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail"
+      "description": "六家精华 + 严格开发全流程：OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail；/alloy:strict 七阶段（需求澄清→设计方案→实施计划→编码→自测验证，3 门禁，产物落盘可续跑）、/alloy:fast 极简模式"
     }
   ]
 }
