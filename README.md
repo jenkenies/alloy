@@ -13,7 +13,7 @@
 | 需求澄清 | Alloy v0.2 内置 | brainstorm：模糊点清单一次性确认 + 唯一推荐方案 |
 | subagent 驱动 | Alloy v0.2 内置 | 多任务双阶段审查实现 |
 | 严格全流程 | Alloy v0.3 内置 | 七阶段：需求澄清→设计方案→实施计划→编码→自测验证，3 门禁 |
-| 落盘续跑 | Alloy v0.3 内置 | 产物落盘 docs/alloy/，中断/换会话从 STATUS.md 续跑 |
+| 落盘续跑 | Alloy v0.3 内置 | 产物落盘 docs/superpowers/（specs/plans 标准目录），中断/换会话从 status 续跑 |
 
 ## 快速开始
 
@@ -59,17 +59,17 @@ explore → brainstorm → spec → plan → implement → verify → 交付
 
 ## 产物与续跑
 
-strict 每阶段产物落盘 `docs/alloy/<日期-任务slug>/`：
+strict 每阶段产物落盘 `docs/superpowers/`（对齐 superpowers 目录规范：specs/plans 按类型分目录，文件名 `<日期>-<任务slug>-<类型>.md`）：
 
-| 文件 | 内容 |
-|---|---|
-| STATUS.md | 当前阶段 / 门禁状态 / 续跑指令 |
-| 01-clarifications.md | 探索结论 + 模糊点清单 + 你的裁决记录 |
-| 02-spec.md | 设计方案（动机/方案/改动点/验收标准） |
-| 03-plan.md | 实施计划（每任务：文件/步骤/验证命令/依赖） |
-| 04-verify-report.md | 验证报告（测试结果 + 验收逐条核对） |
+| 产物 | 位置 | 内容 |
+|---|---|---|
+| 澄清记录 | specs/<任务>-clarifications.md | 探索结论 + 模糊点清单 + 你的裁决记录 |
+| 设计方案 | specs/<任务>-design.md | 动机 / 方案 / 改动点 / 验收标准 |
+| 实施计划 | plans/<任务>-plan.md | 每任务：文件/步骤/验证命令/依赖 |
+| 验证报告 | verify/<任务>-report.md | 测试结果 + 验收标准逐条核对 |
+| 任务状态 | status/<任务>-status.md | 当前阶段 / 门禁状态 / 续跑指令 |
 
-**续跑**：任务中断或换会话后，说"继续 alloy 任务"或 `/alloy:strict`（留空任务描述），从 STATUS.md 记录的阶段恢复，已完成阶段不重做。
+**续跑**：任务中断或换会话后，说"继续 alloy 任务"或 `/alloy:strict`（留空任务描述），从 status 记录的阶段恢复，已完成阶段不重做。
 
 ## 常用命令速查
 

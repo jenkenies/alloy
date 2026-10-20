@@ -51,7 +51,7 @@ description: >
 
 ## 状态落盘联动
 
-- 每任务完成（双审通过标记完成）→ controller 立即更新任务目录 STATUS.md：已完成任务列表 + 当前任务 + 续跑点（防断线丢进度，规则见 alloy-orchestrator 落盘协议）。
+- 每任务完成（双审通过标记完成）→ controller 立即更新该任务的 status 产物（`docs/superpowers/status/<日期>-<slug>-status.md`）：已完成任务列表 + 当前任务 + 续跑点（防断线丢进度，规则见 alloy-orchestrator 落盘协议）。
 - 门禁行为（等待/确认/续跑）统一遵循 alloy-orchestrator 的门禁统一协议，本 skill 不重复定义。
 
 ## brief 字段表（implementer-prompt.md 核心，controller 必须填全）

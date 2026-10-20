@@ -2,7 +2,7 @@
 name: alloy-orchestrator
 description: >
   Alloy 核心编排：strict 七阶段严格全流程（explore→brainstorm 穷举澄清→spec→plan→implement→verify→交付，
-  3 个用户门禁，产物落盘 docs/alloy/ 支持跨会话续跑）与 fast 四阶段极简流程（explore→spec→实现→交付）。
+  3 个用户门禁，产物落盘 docs/superpowers/ 支持跨会话续跑）与 fast 四阶段极简流程（explore→spec→实现→交付）。
   把 CodeGraph（代码上下文）、OpenSpec（变更规格）、Superpowers（TDD 与 brainstorming 纪律）、
   RTK（输出压缩）、Caveman/Ponytail（极简风格）钉到同一条流水线；每个组件先检测可用性，缺失则按降级表降级，绝不中断。
   用于 /alloy:fast 与 /alloy:strict，或任何"先探查→再澄清→规格→计划→实现→验证→交付"的编码任务。
@@ -44,26 +44,25 @@ strict 全程产物落盘（见落盘协议），fast 不落盘。
 
 ## 落盘协议（strict）
 
-任务启动即确定产物目录：`docs/alloy/<YYYY-MM-DD>-<任务slug>/`（slug 从任务描述提取 3-6 个词，连字符连接）。
+产物统一落盘到 **`docs/superpowers/`**（对齐 superpowers 目录规范：specs/plans 按类型分目录；文件名 `<YYYY-MM-DD>-<任务slug>-<类型>.md`，slug 从任务描述提取 3-6 个词，连字符连接）。产物简称与实际路径映射（正文其他处引用的产物文件名即指对应产物）：
 
-```
-docs/alloy/<日期-任务slug>/
-├── STATUS.md            # 阶段状态机
-├── 01-clarifications.md # 探索结论 + 模糊点清单 + 用户裁决记录
-├── 02-spec.md           # 设计方案（动机/方案/改动点/验收标准）
-├── 03-plan.md           # 实施计划（任务清单，brief 数据源）
-└── 04-verify-report.md  # 自测验证报告
-```
+| 简称 | 实际路径 |
+|---|---|
+| 01（澄清记录） | `docs/superpowers/specs/<日期>-<slug>-clarifications.md` |
+| 02（设计方案） | `docs/superpowers/specs/<日期>-<slug>-design.md` |
+| 03（实施计划） | `docs/superpowers/plans/<日期>-<slug>-plan.md` |
+| 04（验证报告） | `docs/superpowers/verify/<日期>-<slug>-report.md` |
+| STATUS（状态机） | `docs/superpowers/status/<日期>-<slug>-status.md` |
 
 规则：
 
-- 每阶段产出**立即落盘**，STATUS.md 同步更新；implement 阶段每任务完成即更新 STATUS.md。
+- 每阶段产出**立即落盘**，STATUS 同步更新；implement 阶段每任务完成即更新 STATUS。
 - 门禁续跑从文件恢复上下文，不依赖会话记忆；已完成阶段的结论**不得重问、不得重做**（零浪费原则跨会话生效）。
-- openspec 可用时 spec 仍走 openspec 提案，但摘要必须同步落盘 02-spec.md——落盘是硬要求，openspec 只是格式来源。
+- openspec 可用时 spec 仍走 openspec 提案，但摘要必须同步落盘 02——落盘是硬要求，openspec 只是格式来源。
 - 落盘失败（目录无写权限等）→ 退回会话内衔接并在交付注明，不中断流程。
-- **落盘产物语言**：01-04 与 STATUS.md 用正常完整语言书写（它们是持久化文档，供后续会话与其他人阅读；caveman 极简风格仅作用于对话交互与交付汇报，不作用于落盘文件——对齐 caveman 自身"持久化文档用正常语言"的边界）。
+- **落盘产物语言**：01-04 与 STATUS 用正常完整语言书写（它们是持久化文档，供后续会话与其他人阅读；caveman 极简风格仅作用于对话交互与交付汇报，不作用于落盘文件——对齐 caveman 自身"持久化文档用正常语言"的边界）。
 
-### STATUS.md 格式
+### STATUS 格式
 
 ```markdown
 # Alloy 任务状态
@@ -191,7 +190,7 @@ strict 共 3 个用户门禁：门禁 1（brainstorm 末，模糊点清单）、
 
 ## 跨会话续跑（strict）
 
-新会话用户说"继续 alloy 任务"→ 读取最近任务目录的 STATUS.md → 按续跑指令从记录阶段继续，已完成阶段产物直接复用不重做。STATUS.md 丢失 → 询问用户从哪个阶段重启，禁止凭空猜测。
+新会话用户说"继续 alloy 任务"→ 扫描 `docs/superpowers/status/` 下最近修改且非终态（delivery）的 status 文件 → 按其续跑指令从记录阶段继续，已完成阶段产物直接复用不重做。status 目录为空或全部终态 → 提示无进行中任务。status 产物丢失 → 询问用户从哪个阶段重启，禁止凭空猜测。
 
 ## 降级总表
 
