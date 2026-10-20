@@ -1,26 +1,30 @@
 ---
 name: alloy-orchestrator
 description: >
-  Alloy 核心编排：把 CodeGraph（代码上下文）、OpenSpec（变更规格）、Superpowers（TDD
-  与 brainstorming 纪律）、RTK（输出压缩）、Caveman/Ponytail（极简风格）钉到同一条流水线。
-  双模式：fast（explore→spec→实现→交付，主会话直接干）与 strict（增加 brainstorm 澄清、
-  ceiling 门禁、subagent 驱动实现）。每个组件先检测可用性，缺失则按降级表降级，绝不中断。
-  用于 /alloy:fast 与 /alloy:strict，或任何"先探查→再规格→实现→交付"的编码任务。
+  Alloy 核心编排：strict 七阶段严格全流程（explore→brainstorm 穷举澄清→spec→plan→implement→verify→交付，
+  3 个用户门禁，产物落盘 docs/alloy/ 支持跨会话续跑）与 fast 四阶段极简流程（explore→spec→实现→交付）。
+  把 CodeGraph（代码上下文）、OpenSpec（变更规格）、Superpowers（TDD 与 brainstorming 纪律）、
+  RTK（输出压缩）、Caveman/Ponytail（极简风格）钉到同一条流水线；每个组件先检测可用性，缺失则按降级表降级，绝不中断。
+  用于 /alloy:fast 与 /alloy:strict，或任何"先探查→再澄清→规格→计划→实现→验证→交付"的编码任务。
 ---
 
 # Alloy 编排器
 
-双模式执行编码任务。命令入口已选定模式：`/alloy:fast` → fast，`/alloy:strict` → strict。每阶段先查组件可用性，按降级表行动。全程遵循 caveman（输出极简）与 ponytail（代码极简）风格。
+双模式执行编码任务。命令入口已选定模式：`/alloy:fast` → fast，`/alloy:strict` → strict。每阶段先查组件可用性，按降级总表行动。全程遵循 caveman（输出极简）与 ponytail（代码极简）风格。
 
 ## 模式差异总览
 
 | 阶段 | fast | strict |
 |---|---|---|
 | explore | ✅ | ✅ |
-| brainstorm | ❌ | ✅（用户明确说跳过才可跳过） |
-| spec | 缺口直接列出问用户 | ✅ + ceiling 五维检查 |
-| 实现 | 主会话直接实现，永不派发 subagent | 任务 ≥3 → subagent 驱动；1-2 个 → 主会话直接实现 |
-| 交付 | caveman 汇报 | caveman 汇报 +（若派发了 subagent）派发统计 |
+| brainstorm | ❌ | ✅ 穷举模糊点 + 门禁 1 清单确认 |
+| spec | 缺口直接列出问用户 | ✅ + ceiling 五维检查 + 落盘 |
+| plan | ❌ | ✅ 实施计划落盘（brief 数据源）+ 门禁 2 |
+| implement | 主会话直接实现，永不派发 subagent | 任务 ≥3 → subagent 驱动；1-2 个 → 主会话直接实现 |
+| verify | ❌（实现内 TDD 自测即收尾） | ✅ 全量验证 + 验收逐条核对 + 门禁 3 验收 |
+| 交付 | caveman 汇报 | caveman 汇报 + 派发统计 + STATUS 终态 |
+
+strict 全程产物落盘（见落盘协议），fast 不落盘。
 
 ## 阶段 0：环境探查（每会话一次）
 
@@ -36,29 +40,82 @@ description: >
 
 本阶段及后续 shell 命令，rtk 可用时优先加 rtk 前缀走压缩输出（常用包装：`rtk grep ...`、`rtk git ...`、`rtk test ...`、`rtk ls ...`）。rtk 报错或不支持该命令时，回退原生命令，不重试不纠结。
 
+**strict 附加**：探索结论要点（涉及文件/符号/现状行为）记入 01-clarifications.md 的"探索结论"节，供后续阶段引用，防会话衔接丢失。
+
+## 落盘协议（strict）
+
+任务启动即确定产物目录：`docs/alloy/<YYYY-MM-DD>-<任务slug>/`（slug 从任务描述提取 3-6 个词，连字符连接）。
+
+```
+docs/alloy/<日期-任务slug>/
+├── STATUS.md            # 阶段状态机
+├── 01-clarifications.md # 探索结论 + 模糊点清单 + 用户裁决记录
+├── 02-spec.md           # 设计方案（动机/方案/改动点/验收标准）
+├── 03-plan.md           # 实施计划（任务清单，brief 数据源）
+└── 04-verify-report.md  # 自测验证报告
+```
+
+规则：
+
+- 每阶段产出**立即落盘**，STATUS.md 同步更新；implement 阶段每任务完成即更新 STATUS.md。
+- 门禁续跑从文件恢复上下文，不依赖会话记忆；已完成阶段的结论**不得重问、不得重做**（零浪费原则跨会话生效）。
+- openspec 可用时 spec 仍走 openspec 提案，但摘要必须同步落盘 02-spec.md——落盘是硬要求，openspec 只是格式来源。
+- 落盘失败（目录无写权限等）→ 退回会话内衔接并在交付注明，不中断流程。
+
+### STATUS.md 格式
+
+```markdown
+# Alloy 任务状态
+- 任务：<一句话>
+- 模式：strict
+- 当前阶段：<explore|brainstorm|spec|plan|implement|verify|delivery>
+- 门禁状态：<无 | 门禁N 待确认（等待内容：…） | 门禁N 已确认>
+- 下一步：<用户该回复什么或系统将做什么>
+- 已完成产物：<文件列表>
+- 续跑指令：<从哪个阶段的哪一步继续>
+```
+
+## 门禁统一协议（strict）
+
+strict 共 3 个用户门禁：门禁 1（brainstorm 末，模糊点清单）、门禁 2（plan 末，spec+plan 合并确认）、门禁 3（verify 末，验收）。所有门禁执行同一硬规则：
+
+1. 产物已落盘，STATUS.md 已更新（写明"下一步该回复什么"）。
+2. 输出标准化提示：确认内容（清单/摘要）+ 可回复项：**确认 / 全部按推荐 / 指出修改点**。
+3. **结束当前回合**：停止生成，不再调用任何工具，不轮询，绝不"我先继续做"。
+4. 用户回复后：从 STATUS.md 记录的续跑点继续；已确认结论不重问。
+5. 禁止：自问自答、替用户拍板、擅自降级跳过门禁、在门禁处输出后续阶段的产物。
+
+门禁例外：用户明确说跳过某门禁 → STATUS.md 记录"用户跳过门禁 N"，交付时注明。verify 的验收本身不可跳过；报告全绿时用户回复"通过"即完成验收。
+
 ## 阶段 2：brainstorm（需求澄清，仅 strict）
 
-位置：explore 之后、spec 之前。superpowers brainstorming 技能可用 → 直接走该技能；不可用 → 走本节内置轻量协议（始终可用）。
+位置：explore 之后、spec 之前。superpowers brainstorming 技能可用 → 走其纪律；不可用 → 本节规则（始终可用）。
 
-提问纪律：
+**穷举收集模糊点**（与 v0.2"仅 4 类必须问"不同，此阶段要求全量收集、不自行"合理决定"）：
 
-- 一次一问，聚焦：目的 / 约束 / 成功标准。
-- **仅 4 类场景必须问**（默认不打扰）：①探索结果模糊 ②多方案难分优劣 ③需求有明显歧义 ④不可逆决策（选型、架构方向、数据结构变更）。
-- 能自行合理决定的不问；不输出 TBD/TODO 占位符。
+1. 目的（为什么做、解决谁的问题）
+2. 约束（性能/兼容/时间/技术栈限制）
+3. 成功标准（做完的判定依据）
+4. 需求歧义（任务描述可多种理解的点）
+5. 方案分歧（多方案难分优劣处）
+6. 不可逆决策（选型、架构方向、数据结构变更）
 
-方案对比：2-3 个候选方案，统一维度对比表（复杂度 / 性能影响 / 兼容性 / 推荐度），**必须给出唯一推荐**及理由，禁止"都可以"。
+能从代码库/已落盘探索结论自答的项，直接给答案并标注"自答"，不进清单。
 
-结论（选定方案 + 澄清记录）作为 spec 提案的输入，不单独落盘文件；结论体现在 spec 中。用户明确说"跳过"时才可跳过本阶段。
+**产出 01-clarifications.md**：探索结论 + 模糊点清单。清单每项 = 编号 + 问题 + 选项（含**唯一推荐**+理由，禁止"都可以"）+ 依赖标注（"依赖第 N 项"）。
 
-## 阶段 3：spec（规格）
+**门禁 1：一次性清单确认。** 优先 AskUserQuestion（每批 ≤4 问，选择题形式），超 4 项分批提交；不适合选择题的项随附纯文本清单。用户可回复"全部按推荐"一次通过。裁决结果落盘 01-clarifications.md 的"裁决记录"节。
 
-- openspec 可用（doctor 报 ok）→ 用 openspec 创建变更提案（proposal/spec/tasks），向用户展示摘要并等确认。
-- 不可用 → 在 `docs/specs/` 手写 markdown 规格（≤30 行：动机 / 改动点 / 验收标准），等用户确认。
-- **规格未经用户确认，不得进入实现阶段。** 用户明确说跳过规格时才可跳过。
-- 等待用户确认是**故意的暂停点（门禁）**，不是卡死：向用户说明"规格已产出，等你确认后进入实现"，用户已确认或跳过时不再等待。
-- fast 模式发现需求缺口时，直接列出问用户（不走 brainstorm、不跑 ceiling）。
+用户明确说跳过 → STATUS.md 记录"用户跳过门禁 1"，直接以探索结论进 spec，交付注明"brainstorm 被跳过"。
 
-### ceiling 五维检查（仅 strict，spec 产出后、请求确认前跑）
+## 阶段 3：spec（规格，strict）
+
+- openspec 可用（doctor 报 ok）→ 用 openspec 创建变更提案（proposal/spec/tasks），**摘要同步落盘 02-spec.md**。
+- 不可用 → 手写 02-spec.md（≤40 行：动机 / 方案 / 改动点 / 验收标准）。
+- **验收标准必须逐条可验证**（能导出测试场景或命令）。
+- **规格未经门禁 2 确认，不得进入实现。**
+
+### ceiling 五维检查（spec 产出后、门禁 2 前跑）
 
 | 维度 | 检查内容 |
 |---|---|
@@ -70,35 +127,70 @@ description: >
 
 判定：
 
-- 五维全过 → 展示 spec 摘要，等用户确认后进实现。
-- 方案未定或存在不可判矛盾 → 停靠：
-  1. spec 标题标注 `[未收敛]`
-  2. 内容改为：候选方向 + 各自 trade-off + **待裁决清单**（每项含：问题 / 选项 / 推荐项）
-  3. **同会话内**停靠等用户裁决；裁决后从 spec 阶段续跑
-  4. explore / brainstorm 已产出的上下文与结论不重做（零浪费）
-  5. 停靠不是失败；交付时注明停靠原因与待裁决项
+- 五维全过 → 直接进 plan 阶段（门禁 2 一并确认）。
+- 方案未定或存在不可判矛盾 → 02-spec.md 标题标注 `[未收敛]`，待裁决项（问题/选项/推荐项）**并入门禁 2 的确认清单**，不单独停靠等待（v0.2 的独立停靠已取消，防多一轮交互卡壳）。
 
-## 阶段 4：实现
+## 阶段 4：plan（实施计划，strict 新增）
+
+落盘 03-plan.md：
+
+- **任务清单**：每任务 = 编号 + 目标 + 涉及文件与符号 + 实现步骤（有序）+ 验证命令 + 依赖任务 + 规模（S=单文件机械 / M=多文件 / L=架构级）。
+- **依赖关系**：标明串行链与可并行项（仅只读任务可并行）。
+- **全量验证命令汇总**：implement 完成后 verify 阶段要跑的完整命令清单（编译/测试/lint）。
+- **plan 字段与 subagent brief 一一对应**：implement 派发时 brief 直接从本文件对应任务行派生，不重新组装。
+- 任务 1-2 个时 plan 照常落盘（字段表仍用于主会话任务组织）。
+
+**门禁 2：spec + plan 合并确认。** 展示 02-spec.md 摘要 + 03-plan.md 任务清单 +（若有）`[未收敛]` 待裁决项，一次性提交用户：确认 / 全部按推荐 / 指出修改点。裁决后 spec 与 plan **冻结**，implement 阶段不再变更方案；发现结构性问题按 BLOCKED 升级链处理。
+
+## 阶段 5：implement（实现）
 
 遵循 ponytail：先爬最小阶梯——能复用现有代码吗？标准库有吗？已装依赖能解吗？能一行吗？最后才是最小实现。
 
 - superpowers 可用 → 走其 test-driven-development 技能：测试先行，RED→GREEN→REFACTOR。
 - 不可用 → 仍执行同等纪律：先写失败测试 → 最小实现 → 运行验证。测试框架跟项目现状，不新引入。
 
-### 派发判定（仅 strict）
+### 派发判定（strict）
 
-- spec 拆解后任务 **≥3 个** → 按 `alloy-subagents` skill 派发 subagent 驱动实现（每任务新 implementer + 双阶段审查；其性能规则：修复轮热续原实例、独立审查可并行、小任务合并审查——照做，这是防慢防卡的关键）。
+- 任务 **≥3 个** → 按 `alloy-subagents` skill 派发 subagent 驱动实现（brief 从 03-plan.md 派生；其性能规则全部照做——热续修复、只读审查并行、小任务合并审查、超时止损、提问自答）。
 - 任务 **1-2 个** → 主会话直接实现（brief 准备成本 > 收益）。
 - **fast 模式永不派发 subagent。**
-- Task 工具不可用 → strict 退回主会话顺序实现；brief 字段表（见 alloy-subagents）仍用于任务组织，不浪费。
+- Task 工具不可用 → strict 退回主会话顺序实现；brief 字段表仍用于任务组织，不浪费。
 
-## 阶段 5：交付
+**每任务完成（双审通过或主会话完成自测）→ 立即更新 STATUS.md**（已完成任务列表 + 当前任务 + 续跑点），防断线丢进度。
+
+## 阶段 6：verify（自测验证，strict 新增）
+
+强制执行（用户明确要求跳过除外，跳过须 STATUS.md 记录并交付注明）：
+
+1. **全量验证**：跑 03-plan.md"全量验证命令汇总"的全部命令（编译/测试/lint），记录通过/失败项数。
+2. **验收逐条核对**：02-spec.md 验收标准逐条 → 通过 / 未通过 / 未覆盖，每条附证据（命令输出摘要 / 文件符号）。
+3. 落盘 04-verify-report.md（验证命令结果 + 验收核对表 + 遗留项）。
+
+判定：
+
+- 全部通过 → **门禁 3**：呈现报告摘要（≤10 行），用户验收：通过 → 交付；不通过 → 列具体问题回 implement 修复。
+- 有未通过项 → **不等待用户**，直接回 implement 修复（仅失败项相关任务），修完重跑 verify；**修复循环上限 2 轮**，超限 → 带遗留项进入门禁 3，04-verify-report.md 明确标注遗留。
+
+## 阶段 7：交付
 
 遵循 caveman：汇报 ≤10 行，动词开头，必含四项：改了啥 / 测了啥 / 风险 / 下一步。
 
 - strict 且走了 subagent → 附派发统计：subagent 数 / 审查轮次。
-- 本会话降级过的组件在此注明（如"上下文未建图""规格为手写 markdown""ceiling 停靠，待裁决项 N 个"）；strict 且用户要求跳过 brainstorm 时，注明"brainstorm 被跳过，规格直接产出"。
+- 本会话降级过的组件在此注明（如"上下文未建图""规格为手写 markdown"）；跳过的门禁逐项注明。
+- STATUS.md 置终态（delivery，附产物索引，供后续会话查阅）。
 - handoffs 提示：末尾一行建议下一步（如"可运行 /alloy:status 查看组件统计"）。
+
+## fast 模式补充（v0.2 行为不变）
+
+四阶段 explore → spec → 实现 → 交付：
+
+- spec 缺口直接列出问用户（不走 brainstorm、不跑 ceiling、不落盘）。
+- 实现阶段主会话直接执行 + TDD 自测，不派发 subagent，无 plan/verify 独立阶段。
+- spec 未经用户确认不得实现；确认等待是故意暂停点，提示后结束回合。
+
+## 跨会话续跑（strict）
+
+新会话用户说"继续 alloy 任务"→ 读取最近任务目录的 STATUS.md → 按续跑指令从记录阶段继续，已完成阶段产物直接复用不重做。STATUS.md 丢失 → 询问用户从哪个阶段重启，禁止凭空猜测。
 
 ## 降级总表
 
@@ -106,7 +198,8 @@ description: >
 |---|---|---|
 | codegraph | MCP 工具列表含 `codegraph_explore`，或 doctor 报 ok | Grep/Glob 探索，交付注明"未建图" |
 | rtk | doctor 报 ok | 原生命令，不加前缀 |
-| openspec | doctor 报 ok | `docs/specs/` 手写规格 |
-| superpowers | doctor 报 ok | 内置轻量 TDD 纪律（测试先行）；strict 的 brainstorm 走内置轻量提问协议（阶段 2 规则，始终可用） |
+| openspec | doctor 报 ok | 手写 02-spec.md（落盘仍强制） |
+| superpowers | doctor 报 ok | 内置轻量 TDD 纪律（测试先行）；brainstorm 走本文件阶段 2 规则（始终可用） |
 | Task 工具（subagent 派发） | 运行时工具可用性 | strict 实现阶段退回主会话顺序实现；brief 字段表仍用于任务组织 |
+| AskUserQuestion | 运行时工具可用性 | 门禁确认改纯文本清单（仍一次性提交、含推荐项） |
 | caveman / ponytail | 内嵌，恒可用 | 不适用 |
