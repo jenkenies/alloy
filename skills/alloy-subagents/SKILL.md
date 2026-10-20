@@ -18,13 +18,14 @@ description: >
 - 仅 strict 模式且 spec 拆解后任务 ≥3 个时使用（≤2 个主会话直接实现）。
 - fast 模式永不使用本协议。
 - Task 工具不可用 → 整体退回主会话顺序实现（brief 字段表仍用于任务组织）。
+- 派发被宿主取消/拒绝 → 视同 Task 工具不可用，走主会话降级路径，禁止原样重试。
 
 ## 流程
 
 ```
 每任务：
   1. 派 implementer（prompts/implementer-prompt.md，brief 从 03-plan.md 对应任务行派生主要字段并补齐数据来源/约束；验收标准与 spec 条目原文摘自 02-spec.md）
-  2. implementer 可先提问 → controller 解答后继续
+  2. implementer 可先提问 → controller 解答后继续（同步派发环境无中途提问通道时，implementer 以 NEEDS_CONTEXT 状态返回，controller 补齐后热续原实例，语义等价）
   3. implementer 实现 + TDD（测试先行）+ 自审
   4. 派 spec 合规审查（prompts/spec-reviewer-prompt.md）
      ❌ 缺口 → 修复：热续原 implementer（SendMessage/resume agentId）→ 重审
@@ -65,6 +66,7 @@ description: >
 | 前置产出契约：前置任务产出的精确符号（常量全名 / 方法签名 / DTO 字段） | 免回读前置实现 |
 | 数据来源：跨链路字段的取值表达式 + 值域 + 空值处理 | 瞎猜字段来源 |
 | 验证命令：编译 / 测试命令 | 无法自证完成 |
+| 工作目录：默认继承会话 cwd；跨目录任务必须显式绝对路径 | 在错误目录跑命令 |
 | 约束：不改无关代码 / 注释语言 / 编码规范要点 | 越界重构 |
 | 卡住升级路径：连续失败 2 次 / 找不到 API 签名 / 数据来源不明 → 停止并返回状态，禁止瞎猜 | 硬编错代码 |
 | spec 相关条目原文：controller 从 spec 摘录本任务相关条目随 brief 带全 | 落实"禁止让 subagent 自己读 spec 文件"红线 |
