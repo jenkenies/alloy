@@ -29,7 +29,6 @@ alloy 目前只以 Claude Code 插件形式分发（`.claude-plugin/marketplace.
 
 **非目标**
 - 不为 workbuddy 做 zip 打包与远端发布（方案 B/C 已否决；zip 源仅在 directory 源验证失败时作为后备议题重新提出）。
-- 不自动改 workbuddy 的 `known_marketplaces.json`（字段多、无 schema 文档，写入风险高）。
 - 不做跨平台脚本（当前环境 Windows；bash 兼容顺带保留，不专门测试）。
 - 不改 skills/commands 内容本身。
 
@@ -64,10 +63,12 @@ alloy/
 
 | 宿主 | 动作 | 自动化 |
 |---|---|---|
-| claude | `claude plugin marketplace add <仓库绝对路径>` + `claude plugin install alloy@alloy-marketplace` | 直接执行 |
-| zcode | `zcode plugins marketplace add <仓库绝对路径>` + `zcode plugins install alloy@alloy-marketplace` | 直接执行 |
-| codex | config.toml 无该段 → 生成 TOML 片段（`[marketplaces.alloy-marketplace]`，`source_type="local"`，`source='\\?\<仓库绝对路径>'` 对齐 specpowers 格式）→ 展示片段，用户确认后追加写入（TOML 追加新表段安全；不引入 TOML 解析库） | 半自动（确认后写入） |
-| workbuddy | 输出 UI 分步指引（设置→插件→添加本地 marketplace→选仓库目录→安装 alloy）；不自动写配置 | 仅指引 |
+| claude | `claude plugin marketplace add <仓库绝对路径>` + `claude plugin install alloy@alloy-marketplace` | 全自动 |
+| zcode | `zcode plugins marketplace add <仓库绝对路径>` + `zcode plugins install alloy@alloy-marketplace` | 全自动 |
+| codex | `codex plugin marketplace add <仓库绝对路径>` + `codex plugin add alloy@alloy-marketplace`（本机 codex CLI 具备 plugin/marketplace 子命令，实探确认） | 全自动 |
+| workbuddy | 注册 marketplace：追加 `known_marketplaces.json` 一条 directory 记录（字段对齐 workbuddy-builtin 样例，追加前校验 JSON 可解析、写前备份）；安装插件：复制仓库至 `plugins/cache/alloy-marketplace/alloy/<version>/` + 追加 `installed_plugins.json` 条目（对齐既有条目结构）。加载确认需用户打开 workbuddy UI 查看，脚本输出验证提示 | 自动写配置 + UI 确认 |
+
+用户确认（2026-11-06）：自动化程度按此表执行——codex 走 CLI 全自动（原 config.toml 追加方案废弃），workbuddy 自动写配置（原"仅指引"方案升级）。
 
 setup 流程顺序：环境探查（现有）→ **宿主检测与注册引导（新增）** → 外部 CLI 安装（现有）。若宿主 CLI 不存在则跳过并注明，不中断。
 
@@ -89,6 +90,7 @@ setup 流程顺序：环境探查（现有）→ **宿主检测与注册引导�
 | 风险 | 应对 |
 |---|---|
 | workbuddy directory 源实际不认 `.codebuddy-plugin/` manifest 或字段缺失 | 实装验证第一步即暴露；按 codebuddy 官方插件字段补齐；仍失败则该宿主降级为 zip 打包议题（重新进入设计，不阻塞其他三宿主） |
-| codex 手动追加 TOML 段破坏 config.toml | 仅追加新表段（不动既有段）；写入前备份 config.toml（`.bak` 后缀，沿用既有 bak 习惯） |
+| workbuddy 自动写配置破坏其插件状态 | 写入前校验 JSON 可解析并备份原文件（`.bak` 后缀）；追加条目结构对齐既有样例；写后 JSON.parse 校验，失败即回滚 |
+| codex CLI 注册行为与预期不符（版本差异） | 注册后 `codex plugin list` 复核；CLI 不支持时降级回 config.toml 追加方案（代码中保留该降级路径） |
 | 双 manifest 版本漂移 | doctor 一致性检查拦截（3.1 规则） |
 | codex/workbuddy 的 commands 机制不生效 | skills 层不受影响（alloy 核心是 skills 驱动）；commands 失效仅影响快捷入口，README 如实标注 |
