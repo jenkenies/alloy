@@ -89,7 +89,96 @@ function appendCodexConfig(root, homedir = os.homedir()) {
   }
 }
 
-module.exports = { MARKETPLACE, PLUGIN, runShell, registerCliHost, appendCodexConfig, CLI_HOSTS };
+// workbuddy：模拟 UI 安装——注册 directory marketplace + 复制插件到 cache + 追加 installed 条目。
+// 全程备份（.alloy-bak）、写后 JSON 校验、失败回滚。
+function copyDir(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+    if (e.name === '.git' || e.name === 'logs') continue;
+    const s = path.join(src, e.name);
+    const d = path.join(dest, e.name);
+    if (e.isDirectory()) copyDir(s, d);
+    else fs.copyFileSync(s, d);
+  }
+}
+
+function registerWorkbuddy(root, { homedir = os.homedir() } = {}) {
+  const plugins = path.join(homedir, '.workbuddy', 'plugins');
+  const kmPath = path.join(plugins, 'known_marketplaces.json');
+  const ipPath = path.join(plugins, 'installed_plugins.json');
+  let kmOriginal = null;
+  let ipOriginal = null;
+  try {
+    try {
+      kmOriginal = fs.readFileSync(kmPath, 'utf8');
+      JSON.parse(kmOriginal); // 损坏的 JSON 直接拒绝，不盲写
+    } catch {
+      throw new Error(`known_marketplaces.json invalid JSON — refuse to write`);
+    }
+    let manifest;
+    try {
+      manifest = JSON.parse(fs.readFileSync(path.join(root, '.codebuddy-plugin', 'plugin.json'), 'utf8'));
+    } catch {
+      throw new Error(`repo missing .codebuddy-plugin/plugin.json: ${root}`);
+    }
+    const version = manifest.version;
+    const cacheDir = path.join(plugins, 'cache', MARKETPLACE, PLUGIN, version);
+    if (kmOriginal && JSON.parse(kmOriginal)[MARKETPLACE]) {
+      return { ok: true, detail: 'marketplace already registered', changed: false };
+    }
+    copyDir(root, cacheDir);
+    fs.writeFileSync(kmPath + '.alloy-bak', kmOriginal);
+    const km = JSON.parse(kmOriginal);
+    km[MARKETPLACE] = {
+      manifestName: MARKETPLACE,
+      type: 'directory',
+      source: { source: 'directory', path: root },
+      installLocation: root,
+      description: `Marketplace from ${root}`,
+      lastUpdated: new Date().toISOString(),
+      autoUpdate: false,
+      isBuiltIn: false,
+    };
+    fs.writeFileSync(kmPath, JSON.stringify(km, null, 2));
+
+    try {
+      ipOriginal = fs.readFileSync(ipPath, 'utf8');
+    } catch {
+      ipOriginal = JSON.stringify({ version: 2, plugins: {} });
+    }
+    fs.writeFileSync(ipPath + '.alloy-bak', ipOriginal);
+    const ip = JSON.parse(ipOriginal);
+    if (!ip.plugins) ip.plugins = {};
+    const now = new Date().toISOString();
+    const entry = { scope: 'user', installPath: cacheDir, version, installedAt: now, lastUpdated: now };
+    if (Array.isArray(ip.plugins[`${PLUGIN}@${MARKETPLACE}`])) {
+      ip.plugins[`${PLUGIN}@${MARKETPLACE}`][0] = entry;
+    } else {
+      ip.plugins[`${PLUGIN}@${MARKETPLACE}`] = [entry];
+    }
+    fs.writeFileSync(ipPath, JSON.stringify(ip, null, 2));
+
+    // 写后校验：两个文件必须仍是可解析 JSON，否则回滚
+    JSON.parse(fs.readFileSync(kmPath, 'utf8'));
+    JSON.parse(fs.readFileSync(ipPath, 'utf8'));
+    return {
+      ok: true,
+      detail: `installed v${version}; 请打开 WorkBuddy 插件页确认 alloy 出现`,
+      changed: true,
+    };
+  } catch (e) {
+    for (const [p, orig] of [[kmPath, kmOriginal], [ipPath, ipOriginal]]) {
+      try {
+        if (orig !== null) fs.writeFileSync(p, orig);
+      } catch {
+        // 回滚尽力而为
+      }
+    }
+    return { ok: false, detail: `workbuddy register failed: ${e.message}（已回滚）`, changed: false };
+  }
+}
+
+module.exports = { MARKETPLACE, PLUGIN, runShell, registerCliHost, appendCodexConfig, registerWorkbuddy, CLI_HOSTS };
 
 if (require.main === module) {
   const root = path.resolve(__dirname, '..');
