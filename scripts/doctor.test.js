@@ -39,6 +39,20 @@ test('detectHosts reads codex registration from config.toml', () => {
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
+test('detectHosts sees alloy on non-first line of plugin list output', () => {
+  const fakeProbe = (cmd, opts) => {
+    if (cmd.startsWith('claude --version')) return { ok: true, detail: '2.1.81' };
+    if (cmd.startsWith('claude plugin list')) {
+      const detail = 'Installed plugins:\n\n  ❯ alloy@alloy-marketplace\n    Version: 0.3.3';
+      return opts && opts.full ? { ok: true, detail } : { ok: true, detail: 'Installed plugins:' };
+    }
+    return { ok: false, detail: 'not found' };
+  };
+  const claude = detectHosts({ probe: fakeProbe }).find((h) => h.id === 'claude');
+  assert.equal(claude.ok, true);
+  assert.equal(claude.registered, true);
+});
+
 test('detectManifestSync ok when versions match', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-sync-'));
   for (const d of ['.claude-plugin', '.codebuddy-plugin']) {

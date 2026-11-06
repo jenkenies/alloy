@@ -157,7 +157,7 @@ test('registerCliHost skips install when already installed', () => {
   const r = registerCliHost('zcode', 'X:\\r', {
     runner: (cmd) => {
       calls.push(cmd);
-      return cmd.includes('list') ? { ok: true, detail: 'alloy@alloy-marketplace 0.3.3' } : { ok: true, detail: '' };
+      return cmd.includes('list') ? { ok: true, detail: 'plugins:\n- alloy@alloy-marketplace [enabled]' } : { ok: true, detail: '' };
     },
   });
   assert.equal(r.ok, true);

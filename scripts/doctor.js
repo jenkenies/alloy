@@ -27,7 +27,7 @@ const EXTERNAL_TOOLS = [
   },
 ];
 
-function probe(cmd) {
+function probe(cmd, { full = false } = {}) {
   try {
     const out = execSync(cmd, {
       encoding: 'utf8',
@@ -35,7 +35,10 @@ function probe(cmd) {
       timeout: 4000,
       maxBuffer: 4 * 1024 * 1024,
     });
-    return { ok: true, detail: String(out).trim().split(/\r?\n/)[0].slice(0, 80) };
+    const text = String(out).trim();
+    // full=true 保留多行全文（注册状态检查需要看到非首行的 alloy 行）
+    const detail = full ? text.slice(0, 4000) : text.split(/\r?\n/)[0].slice(0, 80);
+    return { ok: true, detail };
   } catch (err) {
     // ENOENT = 命令不存在（真缺失）；其他 = 命令存在但运行失败，detail 带原因，避免误报"not found"
     if (err && err.code === 'ENOENT') return { ok: false, detail: 'not found' };
@@ -130,7 +133,7 @@ function detectHosts({ probe: probeFn = probe, homedir = os.homedir() } = {}) {
     }
     let registered = false;
     if (h.listCmd) {
-      registered = probeFn(h.listCmd).detail.includes('alloy@');
+      registered = probeFn(h.listCmd, { full: true }).detail.includes('alloy@');
     } else {
       try {
         registered = fs

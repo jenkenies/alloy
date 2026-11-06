@@ -28,6 +28,19 @@
 1. 装完先跑 `/alloy:status` 体检：缺什么组件一目了然（CLI 缺失可一键补装）。
 2. 直接派任务：`/alloy:fast 修复登录页白屏问题` 或 `/alloy:strict 给订单模块加退款接口`。
 
+## 多宿主安装
+
+同一仓库支持四个宿主，内容层（skills/commands）完全一致，产物落盘目录（`docs/superpowers/`）与宿主无关：
+
+| 宿主 | 安装方式 | slash 命令 |
+|---|---|---|
+| Claude Code | `/plugin marketplace add <仓库>` → `/plugin install alloy@alloy-marketplace` | ✅ `/alloy:*` 全量 |
+| ZCode | `zcode plugins marketplace add <仓库>` → `zcode plugins install alloy@alloy-marketplace` | ✅ `/alloy:*` 全量 |
+| Codex | `codex plugin marketplace add <仓库>` → `codex plugin add alloy@alloy-marketplace` | skills 生效；`/alloy:*` 入口以 Codex 内实际呈现为准（commands 已进插件缓存） |
+| WorkBuddy | 设置 → 插件 → 添加本地 marketplace（选仓库目录）→ 安装 alloy | skills 生效；入口以 WorkBuddy 内实际呈现为准 |
+
+**一键注册**：任一宿主里跑 `/alloy:setup`（或 `node <仓库>/scripts/setup-hosts.js`）——自动检测已安装的宿主并注册（claude/zcode/codex 走 CLI，workbuddy 自动写配置并备份），已注册跳过，幂等可重跑。
+
 ## 两个工作流怎么选
 
 | 你的任务 | 用哪个 |

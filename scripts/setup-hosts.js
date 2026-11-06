@@ -31,7 +31,7 @@ const CLI_HOSTS = {
 // 各宿主 CLI 对"已注册/已安装"的提示措辞不一，宽松匹配
 const ALREADY = /already|exists|registered|up.to.date|installed/i;
 
-function runShell(cmd) {
+function runShell(cmd, { full = false } = {}) {
   try {
     const out = execSync(cmd, {
       encoding: 'utf8',
@@ -39,7 +39,9 @@ function runShell(cmd) {
       timeout: 30000,
       maxBuffer: 4 * 1024 * 1024,
     });
-    return { ok: true, detail: String(out).trim().split(/\r?\n/)[0].slice(0, 100) };
+    const text = String(out).trim();
+    const detail = full ? text.slice(0, 4000) : text.split(/\r?\n/)[0].slice(0, 100);
+    return { ok: true, detail };
   } catch (err) {
     const detail =
       String((err.stdout || '') + (err.stderr || ''))
@@ -53,7 +55,7 @@ function runShell(cmd) {
 function registerCliHost(hostId, root, { runner = runShell } = {}) {
   const h = CLI_HOSTS[hostId];
   if (!h) return { ok: false, detail: `unknown host: ${hostId}`, changed: false };
-  const installed = runner(h.list());
+  const installed = runner(h.list(), { full: true });
   if (installed.ok && /alloy@/.test(installed.detail)) {
     return { ok: true, detail: 'already installed', changed: false };
   }
