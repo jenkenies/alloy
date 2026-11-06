@@ -1,10 +1,43 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { probe, detectSuperpowers, detectManifestSync, checkAll, exitCode, render } = require('./doctor.js');
+const { probe, detectSuperpowers, detectManifestSync, detectHosts, checkAll, exitCode, render } = require('./doctor.js');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+
+test('detectHosts reports presence and registration per host', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-hosts-'));
+  fs.mkdirSync(path.join(tmp, '.workbuddy', 'plugins'), { recursive: true });
+  fs.writeFileSync(
+    path.join(tmp, '.workbuddy', 'plugins', 'known_marketplaces.json'),
+    JSON.stringify({ 'alloy-marketplace': { manifestName: 'alloy-marketplace' } })
+  );
+  const fakeProbe = (cmd) =>
+    cmd.startsWith('claude') ? { ok: true, detail: '1.0.0 (Claude Code)' } : { ok: false, detail: 'not found' };
+  const hosts = detectHosts({ probe: fakeProbe, homedir: tmp });
+  const byId = Object.fromEntries(hosts.map((h) => [h.id, h]));
+  assert.deepEqual(hosts.map((h) => h.id), ['claude', 'zcode', 'codex', 'workbuddy']);
+  assert.equal(byId.claude.ok, true);
+  assert.equal(byId.claude.registered, false);
+  assert.equal(byId.zcode.ok, false);
+  assert.equal(byId.codex.ok, false);
+  assert.equal(byId.workbuddy.ok, true);
+  assert.equal(byId.workbuddy.registered, true);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('detectHosts reads codex registration from config.toml', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-hosts2-'));
+  fs.mkdirSync(path.join(tmp, '.codex'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, '.codex', 'config.toml'), '[plugins."alloy@alloy-marketplace"]\nenabled = true\n');
+  const fakeProbe = (cmd) =>
+    cmd.startsWith('codex') ? { ok: true, detail: 'codex 1.0' } : { ok: false, detail: 'not found' };
+  const codex = detectHosts({ probe: fakeProbe, homedir: tmp }).find((h) => h.id === 'codex');
+  assert.equal(codex.ok, true);
+  assert.equal(codex.registered, true);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
 
 test('detectManifestSync ok when versions match', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-sync-'));

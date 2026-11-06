@@ -114,7 +114,53 @@ function render(results) {
   return lines.join('\n');
 }
 
-module.exports = { probe, detectSuperpowers, detectManifestSync, checkAll, exitCode, render, EXTERNAL_TOOLS };
+// 四宿主检测：claude/zcode/codex 探测 CLI 并查注册状态；workbuddy 查 ~/.workbuddy 注册记录
+function detectHosts({ probe: probeFn = probe, homedir = os.homedir() } = {}) {
+  const out = [];
+  const cliHosts = [
+    { id: 'claude', cmd: 'claude --version', listCmd: 'claude plugin list' },
+    { id: 'zcode', cmd: 'zcode --version', listCmd: 'zcode plugins list' },
+    { id: 'codex', cmd: 'codex --version' },
+  ];
+  for (const h of cliHosts) {
+    const p = probeFn(h.cmd);
+    if (!p.ok) {
+      out.push({ id: h.id, ok: false, registered: false, detail: 'CLI not found' });
+      continue;
+    }
+    let registered = false;
+    if (h.listCmd) {
+      registered = probeFn(h.listCmd).detail.includes('alloy@');
+    } else {
+      try {
+        registered = fs
+          .readFileSync(path.join(homedir, '.codex', 'config.toml'), 'utf8')
+          .includes('alloy@alloy-marketplace');
+      } catch {
+        registered = false;
+      }
+    }
+    out.push({ id: h.id, ok: true, registered, detail: registered ? 'alloy installed' : 'alloy not installed' });
+  }
+  let wbOk = false;
+  let wbReg = false;
+  try {
+    const km = JSON.parse(fs.readFileSync(path.join(homedir, '.workbuddy', 'plugins', 'known_marketplaces.json'), 'utf8'));
+    wbOk = true;
+    wbReg = Object.keys(km).includes('alloy-marketplace');
+  } catch {
+    // 宿主不存在或无插件记录
+  }
+  out.push({
+    id: 'workbuddy',
+    ok: wbOk,
+    registered: wbReg,
+    detail: !wbOk ? '~/.workbuddy not found' : wbReg ? 'alloy registered' : 'alloy not registered',
+  });
+  return out;
+}
+
+module.exports = { probe, detectSuperpowers, detectManifestSync, detectHosts, checkAll, exitCode, render, EXTERNAL_TOOLS };
 
 if (require.main === module) {
   const results = checkAll();
