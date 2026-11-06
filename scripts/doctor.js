@@ -60,6 +60,23 @@ function detectSuperpowers(homedir = os.homedir()) {
   }
 }
 
+// 双 manifest 版本一致性：.claude-plugin 与 .codebuddy-plugin 的 plugin.json version 必须一致
+function detectManifestSync(root) {
+  const read = (dir) => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(root, dir, 'plugin.json'), 'utf8')).version;
+    } catch {
+      return null;
+    }
+  };
+  const claudeV = read('.claude-plugin');
+  const cbV = read('.codebuddy-plugin');
+  if (!claudeV) return { ok: false, detail: '.claude-plugin/plugin.json unreadable' };
+  if (!cbV) return { ok: false, detail: '.codebuddy-plugin/plugin.json missing — workbuddy 支持未就绪' };
+  if (claudeV !== cbV) return { ok: false, detail: `version mismatch: claude=${claudeV} codebuddy=${cbV}` };
+  return { ok: true, detail: `v${claudeV} synced` };
+}
+
 function checkAll({ runner = probe, superpowersRunner = detectSuperpowers } = {}) {
   const results = [];
   for (const tool of EXTERNAL_TOOLS) {
@@ -97,7 +114,7 @@ function render(results) {
   return lines.join('\n');
 }
 
-module.exports = { probe, detectSuperpowers, checkAll, exitCode, render, EXTERNAL_TOOLS };
+module.exports = { probe, detectSuperpowers, detectManifestSync, checkAll, exitCode, render, EXTERNAL_TOOLS };
 
 if (require.main === module) {
   const results = checkAll();

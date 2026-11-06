@@ -1,0 +1,22 @@
+{
+  "name": "alloy",
+  "version": "0.4.0",
+  "description": "六家精华合一的编码插件：OpenSpec（spec 流程）+ Superpowers（TDD 纪律）+ CodeGraph（代码图谱）+ RTK（输出压缩）+ Caveman（输出极简）+ Ponytail（代码极简），另内置需求澄清（brainstorm）与 subagent 驱动实现。/alloy:strict 七阶段严格全流程（需求澄清→设计方案→实施计划→编码→自测验证，3 个用户门禁，产物落盘支持跨会话续跑）、/alloy:fast 极简模式双工作流；/alloy:setup 一键安装外部 CLI 与多宿主注册，组件缺失自动降级不中断。",
+  "description_en": "All-in-one coding plugin: OpenSpec (spec workflow) + Superpowers (TDD discipline) + CodeGraph (code map) + RTK (output compression) + Caveman (minimal output) + Ponytail (minimal diff), with built-in brainstorming and subagent-driven implementation. /alloy:strict is a 7-phase gated workflow with resumable artifacts; /alloy:fast is the minimal mode. /alloy:setup installs external CLIs and registers alloy across hosts.",
+  "author": {
+    "name": "Alloy"
+  },
+  "license": "MIT",
+  "category": "productivity",
+  "keywords": [
+    "openspec",
+    "superpowers",
+    "codegraph",
+    "rtk",
+    "caveman",
+    "ponytail",
+    "token-saving"
+  ],
+  "commands": "./commands",
+  "skills": "./skills"
+}

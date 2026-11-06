@@ -1,7 +1,44 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { probe, detectSuperpowers, checkAll, exitCode, render } = require('./doctor.js');
+const { probe, detectSuperpowers, detectManifestSync, checkAll, exitCode, render } = require('./doctor.js');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+test('detectManifestSync ok when versions match', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-sync-'));
+  for (const d of ['.claude-plugin', '.codebuddy-plugin']) {
+    fs.mkdirSync(path.join(tmp, d));
+    fs.writeFileSync(path.join(tmp, d, 'plugin.json'), JSON.stringify({ name: 'alloy', version: '0.4.0' }));
+  }
+  const r = detectManifestSync(tmp);
+  assert.equal(r.ok, true);
+  assert.match(r.detail, /0\.4\.0/);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('detectManifestSync fails on version mismatch', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-desync-'));
+  fs.mkdirSync(path.join(tmp, '.claude-plugin'));
+  fs.mkdirSync(path.join(tmp, '.codebuddy-plugin'));
+  fs.writeFileSync(path.join(tmp, '.claude-plugin', 'plugin.json'), JSON.stringify({ version: '0.4.0' }));
+  fs.writeFileSync(path.join(tmp, '.codebuddy-plugin', 'plugin.json'), JSON.stringify({ version: '0.3.3' }));
+  const r = detectManifestSync(tmp);
+  assert.equal(r.ok, false);
+  assert.match(r.detail, /0\.3\.3/);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('detectManifestSync fails when .codebuddy-plugin missing', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-nocb-'));
+  fs.mkdirSync(path.join(tmp, '.claude-plugin'));
+  fs.writeFileSync(path.join(tmp, '.claude-plugin', 'plugin.json'), JSON.stringify({ version: '0.4.0' }));
+  const r = detectManifestSync(tmp);
+  assert.equal(r.ok, false);
+  assert.match(r.detail, /codebuddy/);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
 
 test('probe finds node on PATH', () => {
   const r = probe('node --version');

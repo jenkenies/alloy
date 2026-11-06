@@ -1,0 +1,30 @@
+{
+  "name": "alloy-marketplace",
+  "description": "Alloy plugin marketplace (CodeBuddy/WorkBuddy)",
+  "owner": {
+    "name": "Alloy"
+  },
+  "plugins": [
+    {
+      "name": "alloy",
+      "source": "./",
+      "version": "0.4.0",
+      "description": "六家精华 + 严格开发全流程：OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail；/alloy:strict 七阶段（需求澄清→设计方案→实施计划→编码→自测验证，3 门禁，产物落盘可续跑）、/alloy:fast 极简模式",
+      "description_en": "All-in-one coding plugin: OpenSpec + Superpowers + CodeGraph + RTK + Caveman + Ponytail, with a strict spec-driven workflow (brainstorm → spec → plan → implement → verify, resumable across sessions) and a fast minimal mode",
+      "category": "productivity",
+      "author": {
+        "name": "Alloy"
+      },
+      "license": "MIT",
+      "skills": [
+        "./skills/alloy-orchestrator",
+        "./skills/alloy-subagents",
+        "./skills/caveman",
+        "./skills/ponytail"
+      ],
+      "commands": [
+        "./commands"
+      ]
+    }
+  ]
+}
