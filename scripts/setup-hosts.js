@@ -178,12 +178,48 @@ function registerWorkbuddy(root, { homedir = os.homedir() } = {}) {
   }
 }
 
-module.exports = { MARKETPLACE, PLUGIN, runShell, registerCliHost, appendCodexConfig, registerWorkbuddy, CLI_HOSTS };
+// 总入口：依次注册四宿主。CLI 缺失/workbuddy 不存在则跳过；codex CLI 失败时降级写 config.toml。
+function setupHosts(root, { runner = runShell, homedir = os.homedir(), probe } = {}) {
+  const out = [];
+  for (const id of ['claude', 'zcode', 'codex']) {
+    const p = probe ? probe(`${id} --version`) : runShell(`${id} --version`);
+    if (!p.ok) {
+      out.push({ host: id, ok: false, detail: `${id} CLI 未安装，跳过`, changed: false });
+      continue;
+    }
+    const r = registerCliHost(id, root, { runner });
+    out.push({ host: id, ...r });
+    if (id === 'codex' && !r.ok && homedir) {
+      const fb = appendCodexConfig(root, homedir);
+      if (fb.ok) out[out.length - 1] = { host: id, ...fb };
+    }
+  }
+  const wbHome = homedir && fs.existsSync(path.join(homedir, '.workbuddy')) ? homedir : null;
+  out.push(
+    wbHome
+      ? { host: 'workbuddy', ...registerWorkbuddy(root, { homedir: wbHome }) }
+      : { host: 'workbuddy', ok: false, detail: '~/.workbuddy 不存在，跳过', changed: false }
+  );
+  return out;
+}
+
+module.exports = {
+  MARKETPLACE,
+  PLUGIN,
+  runShell,
+  registerCliHost,
+  appendCodexConfig,
+  registerWorkbuddy,
+  setupHosts,
+  CLI_HOSTS,
+};
 
 if (require.main === module) {
   const root = path.resolve(__dirname, '..');
-  for (const id of ['claude', 'zcode', 'codex']) {
-    const r = registerCliHost(id, root);
-    console.log(`${r.ok ? 'ok     ' : 'FAILED '}  ${id.padEnd(8)} ${r.detail}`);
+  const results = setupHosts(root);
+  for (const r of results) {
+    console.log(`${r.ok ? 'ok     ' : 'FAILED '}  ${r.host.padEnd(10)} ${r.detail}`);
   }
+  const failed = results.filter((r) => !r.ok && !/跳过/.test(r.detail));
+  process.exit(failed.length ? 1 : 0);
 }

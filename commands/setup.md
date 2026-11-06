@@ -11,7 +11,9 @@ allowed-tools: Bash
 
 1. 运行 `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.js"`，记下缺失项清单。
 
-2. 对每个缺失项按当前平台安装（装一项验一项）：
+2. **多宿主注册**：运行 `node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-hosts.js"`。它会自动检测 claude/zcode/codex/workbuddy 四宿主并注册 alloy（已装跳过；codex CLI 失败自动降级写 config.toml；workbuddy 自动写配置并备份）。宿主 CLI 缺失属正常，输出 FAILED 才需处理——把失败详情打印给用户并给对应宿主的手动安装命令（见 README 多宿主安装矩阵）。
+
+3. 对每个缺失项按当前平台安装（装一项验一项）：
 
    **openspec**（全平台）：
    - 装：`npm i -g @fission-ai/openspec`
@@ -39,7 +41,7 @@ allowed-tools: Bash
    **superpowers**（无法命令安装）：
    - 提示用户在 Claude Code 插件市场安装 superpowers（`/plugin marketplace add obra/superpowers`，作者官方市场；若已通过 claude-plugins-official 装过则跳过）
 
-3. 重跑 `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.js"`，输出最终状态表（ok / MISSING）。
+4. 重跑 `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.js"`，输出最终状态表（ok / MISSING）+ manifest 同步与宿主矩阵。
 
 ## 规则
 

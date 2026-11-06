@@ -165,5 +165,13 @@ module.exports = { probe, detectSuperpowers, detectManifestSync, detectHosts, ch
 if (require.main === module) {
   const results = checkAll();
   console.log(render(results));
-  process.exit(exitCode(results));
+  const root = path.resolve(__dirname, '..');
+  const sync = detectManifestSync(root);
+  console.log(`\nmanifest: ${sync.ok ? 'ok     ' : 'FAILED '} ${sync.detail}`);
+  console.log('\nhosts:');
+  for (const h of detectHosts({})) {
+    const mark = !h.ok ? 'absent ' : h.registered ? 'installed' : 'present ';
+    console.log(`  ${mark}  ${h.id.padEnd(10)} ${h.detail}`);
+  }
+  process.exit(exitCode(results) || (sync.ok ? 0 : 1));
 }

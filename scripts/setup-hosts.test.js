@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { registerCliHost, appendCodexConfig, registerWorkbuddy } = require('./setup-hosts.js');
+const { registerCliHost, appendCodexConfig, registerWorkbuddy, setupHosts } = require('./setup-hosts.js');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -95,6 +95,46 @@ test('registerWorkbuddy reports repo missing manifest', () => {
   const r2 = registerWorkbuddy(bare, { homedir: tmp }); // repo 没有 .codebuddy-plugin
   assert.equal(r2.ok, false);
   assert.match(r2.detail, /missing .codebuddy-plugin/);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('setupHosts covers four hosts, skips absent CLIs and absent workbuddy', () => {
+  const r = setupHosts('X:\\r', {
+    runner: () => ({ ok: true, detail: 'done' }),
+    probe: () => ({ ok: false, detail: 'not found' }), // 三个 CLI 都不存在
+    homedir: null, // workbuddy 目录不可见 → 跳过
+  });
+  assert.deepEqual(r.map((x) => x.host), ['claude', 'zcode', 'codex', 'workbuddy']);
+  assert.ok(r.every((x) => x.ok === false));
+  assert.match(r[3].detail, /跳过/);
+});
+
+test('setupHosts registers CLI hosts when present and falls back for codex', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloy-sh-'));
+  fs.mkdirSync(path.join(tmp, '.codex'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, '.codex', 'config.toml'), 'x = 1\n');
+  let codexAddFailed = false;
+  const r = setupHosts('D:\\repo', {
+    runner: (cmd) => {
+      // codex 的 CLI 全部失败，触发 config.toml 降级
+      if (cmd.startsWith('codex')) {
+        codexAddFailed = true;
+        return { ok: false, detail: 'boom' };
+      }
+      return { ok: true, detail: 'done' };
+    },
+    probe: (cmd) => ({ ok: true, detail: 'v1' }), // 三个 CLI 都存在
+    homedir: tmp,
+    // workbuddy 目录不存在 → 跳过
+  });
+  const byHost = Object.fromEntries(r.map((x) => [x.host, x]));
+  assert.equal(byHost.claude.ok, true);
+  assert.equal(byHost.zcode.ok, true);
+  assert.equal(byHost.codex.ok, true);
+  assert.match(byHost.codex.detail, /config\.toml/);
+  const txt = fs.readFileSync(path.join(tmp, '.codex', 'config.toml'), 'utf8');
+  assert.match(txt, /\[marketplaces\.alloy-marketplace\]/);
+  assert.equal(byHost.workbuddy.ok, false);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
